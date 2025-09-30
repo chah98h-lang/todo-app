@@ -6,7 +6,9 @@
 
 배포된 앱은 별도 설치 없이 브라우저에서 바로 사용할 수 있습니다!
 
-**🔗 앱 URL**: `https://your-todo-app.vercel.app` (배포 후 링크 업데이트)
+**🔗 앱 URL**: https://todo-app-rose-nu-17.vercel.app/
+
+**📡 백엔드 API**: https://todo-app-47wu.onrender.com
 
 ---
 
