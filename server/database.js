@@ -28,6 +28,17 @@ if (usePostgres) {
       display_order INTEGER DEFAULT 0
     )
   `).catch(err => console.error('Error creating table:', err));
+  
+  // 기존 테이블에 display_order 컬럼 추가 (없으면)
+  pool.query(`
+    ALTER TABLE todos 
+    ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 0
+  `).catch(err => {
+    // 컬럼이 이미 있으면 에러 무시
+    if (!err.message.includes('already exists')) {
+      console.error('Error adding column:', err);
+    }
+  });
 }
 
 // JSON 파일 경로 (로컬용)
