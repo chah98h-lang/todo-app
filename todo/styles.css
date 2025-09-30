@@ -228,7 +228,7 @@ body {
   display: inline-flex; 
   gap: 4px; 
   align-items: center;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 0.2s ease;
 }
 .todo-actions .icon-btn {
