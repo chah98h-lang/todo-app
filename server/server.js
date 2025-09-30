@@ -39,11 +39,16 @@ app.post('/api/todos', async (req, res) => {
       return res.status(400).json({ error: 'Text is required' });
     }
     
+    // 현재 todos 개수를 구해서 마지막 순서로 추가
+    const todos = await getAllTodos();
+    const maxOrder = todos.length > 0 ? Math.max(...todos.map(t => t.order || 0)) : -1;
+    
     const newTodo = {
       id: randomUUID(),
       text: text.trim(),
       completed: false,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      order: maxOrder + 1
     };
     
     await createTodo(newTodo);
@@ -87,6 +92,29 @@ app.delete('/api/todos/:id', async (req, res) => {
   } catch (error) {
     console.error('Error deleting todo:', error);
     res.status(500).json({ error: 'Failed to delete todo' });
+  }
+});
+
+// 5. 할 일 순서 일괄 업데이트 (PUT /api/todos/reorder)
+app.put('/api/todos/reorder', async (req, res) => {
+  try {
+    const { ids } = req.body; // [id1, id2, id3, ...]
+    
+    if (!Array.isArray(ids)) {
+      return res.status(400).json({ error: 'ids must be an array' });
+    }
+    
+    // 각 todo의 order를 배열 인덱스로 업데이트
+    const updatePromises = ids.map((id, index) => 
+      updateTodo(id, { order: index })
+    );
+    
+    await Promise.all(updatePromises);
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error reordering todos:', error);
+    res.status(500).json({ error: 'Failed to reorder todos' });
   }
 });
 

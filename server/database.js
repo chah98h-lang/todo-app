@@ -24,7 +24,8 @@ if (usePostgres) {
       id TEXT PRIMARY KEY,
       text TEXT NOT NULL,
       completed BOOLEAN DEFAULT false,
-      created_at BIGINT NOT NULL
+      created_at BIGINT NOT NULL,
+      display_order INTEGER DEFAULT 0
     )
   `).catch(err => console.error('Error creating table:', err));
 }
@@ -40,19 +41,20 @@ if (!usePostgres && !existsSync(DB_FILE)) {
 // ==================== PostgreSQL 함수 ====================
 
 async function getAllTodosPostgres() {
-  const result = await pool.query('SELECT * FROM todos ORDER BY created_at DESC');
+  const result = await pool.query('SELECT * FROM todos ORDER BY display_order ASC, created_at DESC');
   return result.rows.map(row => ({
     id: row.id,
     text: row.text,
     completed: row.completed,
-    createdAt: Number(row.created_at)
+    createdAt: Number(row.created_at),
+    order: row.display_order || 0
   }));
 }
 
 async function createTodoPostgres(todo) {
   await pool.query(
-    'INSERT INTO todos (id, text, completed, created_at) VALUES ($1, $2, $3, $4)',
-    [todo.id, todo.text, todo.completed, todo.createdAt]
+    'INSERT INTO todos (id, text, completed, created_at, display_order) VALUES ($1, $2, $3, $4, $5)',
+    [todo.id, todo.text, todo.completed, todo.createdAt, todo.order || 0]
   );
   return todo;
 }
@@ -70,6 +72,10 @@ async function updateTodoPostgres(id, updates) {
     fields.push(`completed = $${paramIndex++}`);
     values.push(updates.completed);
   }
+  if (updates.order !== undefined) {
+    fields.push(`display_order = $${paramIndex++}`);
+    values.push(updates.order);
+  }
 
   if (fields.length === 0) return null;
 
@@ -84,7 +90,8 @@ async function updateTodoPostgres(id, updates) {
     id: row.id,
     text: row.text,
     completed: row.completed,
-    createdAt: Number(row.created_at)
+    createdAt: Number(row.created_at),
+    order: row.display_order || 0
   };
 }
 
@@ -98,7 +105,9 @@ async function deleteTodoPostgres(id) {
 function getAllTodosJSON() {
   try {
     const data = readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(data);
+    const todos = JSON.parse(data);
+    // order 기준으로 정렬 (order가 없으면 0으로 간주)
+    return todos.sort((a, b) => (a.order || 0) - (b.order || 0));
   } catch (error) {
     console.error('Error reading todos:', error);
     return [];
@@ -117,9 +126,10 @@ function saveTodos(todos) {
 
 function createTodoJSON(todo) {
   const todos = getAllTodosJSON();
-  todos.push(todo);
+  const todoWithOrder = { ...todo, order: todo.order || 0 };
+  todos.push(todoWithOrder);
   saveTodos(todos);
-  return todo;
+  return todoWithOrder;
 }
 
 function updateTodoJSON(id, updates) {

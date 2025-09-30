@@ -64,3 +64,19 @@ export async function deleteTodo(id: string): Promise<void> {
     throw new Error('Failed to delete todo');
   }
 }
+
+// 할 일 순서 변경
+export async function reorderTodos(ids: string[]): Promise<void> {
+  const baseUrl = API_URL.replace('/api/todos', '');
+  const response = await fetch(`${baseUrl}/api/todos/reorder`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ ids }),
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to reorder todos');
+  }
+}

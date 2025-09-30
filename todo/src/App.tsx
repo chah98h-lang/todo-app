@@ -73,11 +73,20 @@ export default function App() {
     }
   }, [todos])
 
-  const reorder = useCallback((idsInOrder: string[]) => {
+  const reorder = useCallback(async (idsInOrder: string[]) => {
+    // 먼저 UI 업데이트 (낙관적 업데이트)
     setTodos((old) => {
       const byId = new Map(old.map((t) => [t.id, t]))
       return idsInOrder.map((id) => byId.get(id)!).filter(Boolean)
     })
+    
+    // 서버에 순서 저장
+    try {
+      await api.reorderTodos(idsInOrder)
+    } catch (err) {
+      console.error('Failed to save order:', err)
+      // 에러 시 원래 순서로 복구 (선택사항)
+    }
   }, [])
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
@@ -132,7 +141,7 @@ export default function App() {
           onReorder={reorder}
         />
 
-        <p className="hint">드래그 앤 드롭으로 순서를 변경할 수 있어요. 더블클릭 또는 연필 아이콘으로 편집할 수 있어요.</p>
+        <p className="hint">드래그 앤 드롭으로 순서를 변경할 수 있어요 (서버에 자동 저장). 더블클릭 또는 연필 아이콘으로 편집할 수 있어요.</p>
       </main>
 
       <footer className="app-footer">
