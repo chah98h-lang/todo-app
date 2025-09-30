@@ -1,0 +1,17 @@
+{
+  "name": "todo-server",
+  "version": "1.0.0",
+  "description": "Todo 리스트 백엔드 서버",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "pg": "^8.16.3"
+  }
+}
