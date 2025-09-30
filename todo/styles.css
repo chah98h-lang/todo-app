@@ -246,7 +246,8 @@ body {
 .icon { 
   width: 20px; 
   height: 20px; 
-  fill: var(--text-light);
+  fill: currentColor;
+  color: var(--text-primary);
 }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 1, 1); white-space: nowrap; border: 0; }
 
